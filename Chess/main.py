@@ -22,13 +22,18 @@ def main():
     current_white_piece = None
     current_black_piece = None
 
+    font = pygame.font.Font(None, 20)
+    msg = font.render("Start", True, (0, 0, 0))
+    pos_text = msg.get_rect(bottomleft=(15, HEIGHT - 10))
+
     while True:
         clock.tick(60)
-
         game.board.draw_board()
         game.paint_moves_list(True, current_white_piece)
         game.paint_moves_list(False, current_black_piece)
         game.drawing_pieces()
+
+        game.screen.blit(msg, pos_text)
 
         for event in pygame.event.get():
             '''Condition for ending the game'''
