@@ -65,18 +65,25 @@ class Game:
             self.black_pieces_locations[idx] = piece.position.get_position()
 
     def drawing_pieces(self):
+        color_pieces = [self.black_pieces, self.white_pieces] if self.turn_white else [self.white_pieces,
+                                                                                       self.black_pieces]
+        for i in range(2):
+            for piece in color_pieces[i]:
+                if piece.die is False:
+                    piece.drawing_image(self.screen)
+                else:
+                    piece.drawing_die_image(self.screen)
 
-        for piece in self.white_pieces:
-            if piece.die is False:
-                piece.drawing_image(self.screen)
-            else:
-                piece.drawing_die_image(self.screen)
+    def paint_turn_game(self):
+        font = pygame.font.SysFont("Times New Roman", 18)
 
-        for piece in self.black_pieces:
-            if piece.die is False:
-                piece.drawing_image(self.screen)
-            else:
-                piece.drawing_die_image(self.screen)
+        msg = font.render("Turn :: White pieces", True, WHITE_COLOR if self.turn_white else (0, 0, 0))
+        pos_text = msg.get_rect(topleft=(30, 6))
+        self.screen.blit(msg, pos_text)
+
+        msg = font.render("Turn :: Black pieces", True, (0, 0, 0) if self.turn_white else WHITE_COLOR)
+        pos_text = msg.get_rect(bottomleft=(30, HEIGHT - 6))
+        self.screen.blit(msg, pos_text)
 
     def paint_current_position(self, position):
         pygame.draw.rect(self.screen, BLUE, (position[0] * EDGE + INITIAL_POSITION, position[1] * EDGE
