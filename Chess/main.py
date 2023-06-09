@@ -25,21 +25,24 @@ def main():
     while True:
         clock.tick(60)
 
+        game.paint_turn_game()
+        game.paint_round()
+        game.paint_score()
+
         game.board.draw_board()
         game.paint_moves_list(True, current_white_piece)
         game.paint_moves_list(False, current_black_piece)
         game.drawing_pieces()
 
-        game.paint_turn_game()
-
         for event in pygame.event.get():
+
             '''Condition for ending the game'''
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
 
             '''Selection the piece'''
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN and not game.game_over:
                 if game.turn_white is True:
                     for idx, piece in enumerate(game.white_pieces):
                         if piece is not None and piece.rect.collidepoint(event.pos):
@@ -55,7 +58,7 @@ def main():
                             current_white_piece = None
 
             '''Mouse button activate'''
-            if event.type == pygame.MOUSEMOTION:
+            if event.type == pygame.MOUSEMOTION and not game.game_over:
                 new_pos = calc_position(event.pos)
                 if game.turn_white is True:
                     if current_white_piece is not None:
@@ -71,7 +74,7 @@ def main():
                                 piece.mask_move(new_pos[0], new_pos[1])
 
             '''Ending move the piece'''
-            if event.type == pygame.MOUSEBUTTONUP:
+            if event.type == pygame.MOUSEBUTTONUP and not game.game_over:
                 new_pos = calc_position(event.pos)
                 if game.turn_white is True:
                     if current_white_piece is not None:
@@ -82,6 +85,9 @@ def main():
                                 game.save_piece_location(piece, current_white_piece)
 
                                 game.battle(piece)
+
+                                if game.check_mate():
+                                    game.set_winner('White')
 
                                 current_white_piece = None
                                 piece.moving = False
@@ -101,7 +107,10 @@ def main():
                                 game.save_piece_location(piece, current_black_piece)
 
                                 game.battle(piece)
-                                game.paint_moves_list(False, current_white_piece)
+
+                                if game.check_mate():
+                                    game.set_winner('Black')
+
                                 current_black_piece = None
                                 piece.moving = False
 
@@ -111,6 +120,17 @@ def main():
                                 piece.return_piece()
                                 current_black_piece = None
                                 piece.moving = False
+
+            if event.type == pygame.KEYDOWN and game.game_over:
+                if event.key == pygame.K_RETURN:
+                    game.reset(game.winner)
+                    screen.fill(const.BOARD_COLOR)
+                    current_white_piece = None
+                    current_black_piece = None
+
+        if game.winner is not None:
+            game.game_over = True
+            game.draw_game_over()
 
         pygame.display.update()
 

@@ -1,5 +1,5 @@
 from piece import Piece
-from auxi.const import WHITE_KING, BLACK_KING, DIE_WHITE_KING, DIE_BLACK_KING
+from auxi.const import WHITE_KING, BLACK_KING, DIE_WHITE_KING, DIE_BLACK_KING, KING_IDX
 from board.board import position_in_board
 
 
@@ -18,7 +18,8 @@ class King(Piece):
                        self.position.axis_y + house[1])
 
             if new_pos not in partners_pieces_location and position_in_board(new_pos):
-                moves.append(new_pos)
+                if new_pos != enemies_pieces_locations[KING_IDX]:
+                    moves.append(new_pos)
 
         self.valid_movies = moves
 
