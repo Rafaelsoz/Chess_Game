@@ -22,10 +22,6 @@ WHITE_LOCATIONS = [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (6, 0), (7, 0
 BLACK_LOCATIONS = [(0, 7), (1, 7), (2, 7), (3, 7), (4, 7), (5, 7), (6, 7), (7, 7),
                    (0, 6), (1, 6), (2, 6), (3, 6), (4, 6), (5, 6), (6, 6), (7, 6)]
 
-KING_IDX = 3
-KNIGHT_IDX = [1, 6]
-BISHOP_IDX = [2, 5]
-
 WHITE_ROOK = pygame.transform.scale(pygame.image.load('images/whiteRook.png'), (80, 80))
 WHITE_KNIGHT = pygame.transform.scale(pygame.image.load('images/whiteKnight.png'), (80, 80))
 WHITE_BISHOP = pygame.transform.scale(pygame.image.load('images/whiteBishop.png'), (80, 80))

@@ -69,7 +69,11 @@ class Piece:
         self.die = True
         self.position.axis_x = None
         self.position.axis_y = None
+        self.position = None
+
         self.second_current_position.axis_x = None
         self.second_current_position.axis_y = None
+        self.second_current_position = None
+
         self.rect.x = WIDTH
         self.rect.y = HEIGHT

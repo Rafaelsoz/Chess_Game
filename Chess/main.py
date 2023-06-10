@@ -1,4 +1,3 @@
-import pygame
 from auxi import const
 from game import *
 from auxi.position import calc_position
@@ -18,20 +17,17 @@ def main():
     game = Game(screen)
     clock = pygame.time.Clock()
 
-    '''Save id the current piece'''
-    current_white_piece = None
-    current_black_piece = None
+    '''Save piece'''
+    current_piece = None
 
     while True:
         clock.tick(60)
 
+        game.board.draw_board()
         game.paint_turn_game()
         game.paint_round()
         game.paint_score()
-
-        game.board.draw_board()
-        game.paint_moves_list(True, current_white_piece)
-        game.paint_moves_list(False, current_black_piece)
+        game.paint_moves_list(current_piece)
         game.drawing_pieces()
 
         for event in pygame.event.get():
@@ -43,90 +39,57 @@ def main():
 
             '''Selection the piece'''
             if event.type == pygame.MOUSEBUTTONDOWN and not game.game_over:
-                if game.turn_white is True:
-                    for idx, piece in enumerate(game.white_pieces):
-                        if piece is not None and piece.rect.collidepoint(event.pos):
-                            piece.moving = True
-                            current_white_piece = idx
-                            current_black_piece = None
-
-                else:
-                    for idx, piece in enumerate(game.black_pieces):
-                        if piece is not None and piece.rect.collidepoint(event.pos):
-                            piece.moving = True
-                            current_black_piece = idx
-                            current_white_piece = None
+                pieces = game.white_pieces if game.turn_white else game.black_pieces
+                for piece in pieces:
+                    if piece is not None and piece.rect.collidepoint(event.pos):
+                        piece.moving = True
+                        current_piece = piece
 
             '''Mouse button activate'''
             if event.type == pygame.MOUSEMOTION and not game.game_over:
                 new_pos = calc_position(event.pos)
-                if game.turn_white is True:
-                    if current_white_piece is not None:
-                        piece = game.white_pieces[current_white_piece]
-                        if piece.moving:
-                            if new_pos in piece.moves_list(game.white_pieces_locations, game.white_pieces_locations):
-                                piece.mask_move(new_pos[0], new_pos[1])
-                else:
-                    if current_black_piece is not None:
-                        piece = game.black_pieces[current_black_piece]
-                        if piece.moving:
-                            if new_pos in piece.moves_list(game.black_pieces_locations, game.white_pieces_locations):
-                                piece.mask_move(new_pos[0], new_pos[1])
+
+                if current_piece is not None and current_piece.moving:
+                    partners, enemies = game.partners_and_enemies_positions(current_piece)
+
+                    if new_pos in current_piece.moves_list(partners, enemies):
+                        current_piece.mask_move(new_pos[0], new_pos[1])
 
             '''Ending move the piece'''
             if event.type == pygame.MOUSEBUTTONUP and not game.game_over:
+                text_winner = 'White' if game.turn_white else 'Black'
+
                 new_pos = calc_position(event.pos)
-                if game.turn_white is True:
-                    if current_white_piece is not None:
-                        piece = game.white_pieces[current_white_piece]
-                        if piece.moving:
-                            if new_pos in piece.moves_list(game.white_pieces_locations, game.black_pieces_locations):
-                                piece.move_piece(new_pos[0], new_pos[1])
-                                game.save_piece_location(piece, current_white_piece)
 
-                                game.battle(piece)
+                if current_piece is not None and current_piece.moving:
+                    partners, enemies = game.partners_and_enemies_positions(current_piece)
 
-                                if game.check_mate():
-                                    game.set_winner('White')
+                    if new_pos in current_piece.moves_list(partners, enemies):
+                        current_piece.move_piece(new_pos[0], new_pos[1])
 
-                                current_white_piece = None
-                                piece.moving = False
+                        game.battle(current_piece)
 
-                                game.change_turn()
+                        if game.check_mate():
+                            game.set_winner(text_winner)
 
-                            else:
-                                piece.return_piece()
-                                current_white_piece = None
-                                piece.moving = False
-                else:
-                    if current_black_piece is not None:
-                        piece = game.black_pieces[current_black_piece]
-                        if piece.moving:
-                            if new_pos in piece.moves_list(game.black_pieces_locations, game.white_pieces_locations):
-                                piece.move_piece(new_pos[0], new_pos[1])
-                                game.save_piece_location(piece, current_black_piece)
+                        if game.a_tie():
+                            game.set_winner('Tied')
 
-                                game.battle(piece)
+                        current_piece.moving = False
+                        current_piece = None
 
-                                if game.check_mate():
-                                    game.set_winner('Black')
+                        game.change_turn()
 
-                                current_black_piece = None
-                                piece.moving = False
-
-                                game.change_turn()
-
-                            else:
-                                piece.return_piece()
-                                current_black_piece = None
-                                piece.moving = False
+                    else:
+                        current_piece.return_piece()
+                        current_piece.moving = False
+                        current_piece = None
 
             if event.type == pygame.KEYDOWN and game.game_over:
                 if event.key == pygame.K_RETURN:
+                    current_piece = None
                     game.reset(game.winner)
                     screen.fill(const.BOARD_COLOR)
-                    current_white_piece = None
-                    current_black_piece = None
 
         if game.winner is not None:
             game.game_over = True
