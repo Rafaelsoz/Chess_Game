@@ -152,9 +152,26 @@ class Game:
 
         return partners, enemies
 
+    def check_king(self, king):
+        if not king.die:
+            king_pos = self.get_piece(King, True, king.white)[0]
+            enemies = self.black_pieces if king.white else self.white_pieces
+
+            for enemy in enemies:
+                if not enemy.die:
+                    current_partners, current_enemies = self.partners_and_enemies_positions(enemy)
+                    list_moves = enemy.moves_list(current_partners, current_enemies)
+
+                    if len(list_moves) > 0 and king_pos in list_moves:
+                        return True
+        return False
+
     def drawing_pieces(self):
-        color_pieces = [self.black_pieces, self.white_pieces] if self.turn_white else [self.white_pieces,
-                                                                                       self.black_pieces]
+        if self.turn_white:
+            color_pieces = [self.black_pieces, self.white_pieces]
+        else:
+            color_pieces = [self.white_pieces, self.black_pieces]
+
         for i in range(2):
             for piece in color_pieces[i]:
                 if piece.die is False:
@@ -164,30 +181,17 @@ class Game:
 
     def draw_check(self):
         if not self.over:
-            kings_pos = [self.get_piece(King, True, True)[0],
-                         self.get_piece(King, True, False)[0]]
-            enemies = [self.black_pieces, self.white_pieces]
-
-            for idx, king in enumerate(kings_pos):
-                enemies_list = enemies[idx]
-                for enemy in enemies_list:
-                    if not enemy.die:
-                        current_partners, current_enemies = self.partners_and_enemies_positions(enemy)
-                        list_moves = enemy.moves_list(current_partners, current_enemies)
-
-                        if len(list_moves) > 0 and king in list_moves:
-                            self.board.draw_square(king, (204, 20, 20), (20, 20, 20))
-                            break
-
-    def draw_current_position(self, position):
-        self.board.draw_square(position, BLUE, (20, 20, 20))
+            kings = [self.get_piece(King, False, True)[0], self.get_piece(King, False, False)[0]]
+            for king in kings:
+                if self.check_king(king):
+                    self.board.draw_square(king.position.get_position(), RED, BLACK)
 
     def draw_moves_list(self, piece):
         if piece is not None:
             partners, enemies = self.partners_and_enemies_positions(piece)
-            self.draw_current_position(piece.position.get_position())
+            self.board.draw_square(piece.position.get_position(), BLUE, BLACK)
             for new_pos in piece.moves_list(partners, enemies):
-                self.board.draw_square(new_pos, GREEN, (20, 20, 20))
+                self.board.draw_square(new_pos, GREEN, BLACK)
 
     def battle(self, piece):
         enemies = self.black_pieces if piece.white else self.white_pieces
@@ -252,3 +256,16 @@ class Game:
             return True
         else:
             return False
+
+    def check_mate(self, white):
+        if not self.over:
+            king = self.get_piece(King, False, white)[0]
+
+            if self.check_king(king):
+                king.check = True
+                king.count_check += 1
+            else:
+                king.check = False
+                king.count_check = 0
+
+            return True if king.count_check >= 2 else False

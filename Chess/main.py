@@ -81,6 +81,12 @@ def main():
                         if game.a_tie():
                             game.set_winner('Tied')
 
+                        if game.check_mate(True):
+                            game.set_winner('Black')
+
+                        if game.check_mate(False):
+                            game.set_winner('White')
+
                         current_piece.moving = False
                         current_piece = None
 
