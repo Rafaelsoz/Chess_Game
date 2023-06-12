@@ -8,12 +8,12 @@ class Knight(Piece):
     def __init__(self, white, axis):
         Piece.__init__(self, white, WHITE_KNIGHT if white else BLACK_KNIGHT,
                        DIE_WHITE_KNIGHT if white else DIE_BLACK_KNIGHT, axis, "Knight")
-        self.houses = [(1, 2), (1, -2), (2, 1), (2, -1), (-1, 2), (-1, -2), (-2, 1), (-2, -1)]
+        self._houses = [(1, 2), (1, -2), (2, 1), (2, -1), (-1, 2), (-1, -2), (-2, 1), (-2, -1)]
 
     def moves_list(self, partners_pieces_location, enemies_pieces_locations):
         moves = []
 
-        for house in self.houses:
+        for house in self._houses:
 
             new_pos = (self.position.axis_x + house[0],
                        self.position.axis_y + house[1])

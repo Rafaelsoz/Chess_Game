@@ -28,9 +28,6 @@ class Piece:
 
         self.moving = False
 
-    def get_name(self):
-        return self.name
-
     def moves_list(self, partners_pieces_location, enemies_pieces_locations):
         pass
 

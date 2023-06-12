@@ -8,12 +8,12 @@ class Pawn(Piece):
     def __init__(self, white, axis):
         Piece.__init__(self, white, WHITE_PAWN if white else BLACK_PAWN,
                        DIE_WHITE_PAWN if white else DIE_BLACK_PAWN, axis, "Pawn")
-        self.first_movie = True
+        self._first_movie = True
 
     def moves_list(self, partners_pieces_location, enemies_pieces_locations):
         moves = []
         '''Movements for feet in board'''
-        if self.first_movie:
+        if self._first_movie:
             houses = [1, 2] if self.white else [-1, -2]
             for i in range(2):
                 new_pos = (self.position.axis_x, self.position.axis_y + houses[i])
@@ -44,4 +44,4 @@ class Pawn(Piece):
 
     def move_piece(self, axis_x, axis_y):
         self.move(axis_x, axis_y)
-        self.first_movie = False
+        self._first_movie = False

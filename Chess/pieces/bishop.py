@@ -8,12 +8,12 @@ class Bishop(Piece):
     def __init__(self, white, axis):
         Piece.__init__(self, white, WHITE_BISHOP if white else BLACK_BISHOP,
                        DIE_WHITE_BISHOP if white else DIE_BLACK_BISHOP, axis, "Bishop")
-        self.houses = [(1, -1), (-1, -1), (1, 1), (-1, 1)]
+        self._houses = [(1, -1), (-1, -1), (1, 1), (-1, 1)]
 
     def moves_list(self, partners_pieces_location, enemies_pieces_locations):
         moves = []
 
-        for house in self.houses:
+        for house in self._houses:
             multiplier = 1
             path = True
 
