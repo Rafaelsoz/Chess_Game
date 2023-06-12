@@ -8,7 +8,7 @@ class Piece:
         self.name = name
         self.image = image
         self.die = False
-        self.die_image = die_image
+        self.dead_image = die_image
         self.valid_movies = None
         self.white = white
 
@@ -18,10 +18,10 @@ class Piece:
         self.rect.x = INITIAL_POSITION + self.position.axis_x * EDGE
         self.rect.y = INITIAL_POSITION + self.position.axis_y * EDGE
 
-        self.die_piece_position = Position(axis[1], axis[0])
-        self.die_rect = self.die_image.get_rect()
-        self.die_rect.x = self.die_piece_position.axis_x * 25 + END_POSITION + 60
-        self.die_rect.y = INITIAL_POSITION + 20 + self.die_piece_position.axis_y * EDGE
+        self.dead_piece_position = Position(axis[1], axis[0])
+        self.dead_rect = self.dead_image.get_rect()
+        self.dead_rect.x = self.dead_piece_position.axis_x * 25 + END_POSITION + 60
+        self.dead_rect.y = INITIAL_POSITION + 20 + self.dead_piece_position.axis_y * EDGE
 
         self.second_current_position = Position(axis[0], axis[1])
         self.second_position = Position(axis[0], axis[1])
@@ -30,12 +30,6 @@ class Piece:
 
     def get_name(self):
         return self.name
-
-    def drawing_image(self, screen):
-        screen.blit(self.image, self.rect)
-
-    def drawing_die_image(self, screen):
-        screen.blit(self.die_image, self.die_rect)
 
     def moves_list(self, partners_pieces_location, enemies_pieces_locations):
         pass

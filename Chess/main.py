@@ -25,10 +25,10 @@ def main():
 
         game.screen.fill(const.BOARD_COLOR)
         game.board.draw_board()
-        game.draw_turn_game()
-        game.draw_round()
-        game.draw_score()
-        game.draw_moves_without_death()
+        game.board.draw_turn_game(game.turn_white)
+        game.board.draw_round(game.round)
+        game.board.draw_score(game.white_score, game.black_score)
+        game.board.draw_moves_without_death(game.moves_without_death)
         game.draw_moves_list(current_piece)
         game.draw_check()
         game.drawing_pieces()
@@ -128,15 +128,15 @@ def main():
                     game.agreement = False
 
         if game.agreement:
-            game.draw_agreement()
+            game.board.draw_agreement(game.turn_white)
 
         if game.check_promotion() and not game.over:
             game.pause = True
-            game.draw_promotion()
+            game.board.draw_promotion()
 
         if game.winner is not None and not game.pause:
             game.over = True
-            game.draw_game_over()
+            game.board.draw_game_over(game.winner)
 
         pygame.display.update()
 

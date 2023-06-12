@@ -1,4 +1,3 @@
-import pygame.font
 from auxi.const import *
 from pieces.bishop import Bishop
 from pieces.king import King
@@ -134,7 +133,15 @@ class Game:
         for idx, piece in enumerate(pieces):
             if not piece.die and isinstance(piece, Pawn):
                 if piece.position.axis_y == 0 or piece.position.axis_y == 7:
+                    aux_rect = pieces[idx].dead_rect
+                    aux_rect_x = pieces[idx].dead_rect.x
+                    aux_rect_y = pieces[idx].dead_rect.y
+
                     pieces[idx] = new_class(not self.turn_white, piece.position.get_position())
+
+                    pieces[idx].dead_rect = aux_rect
+                    pieces[idx].dead_rect.x = aux_rect_x
+                    pieces[idx].dead_rect.y = aux_rect_y
 
     def partners_and_enemies_positions(self, piece):
         partners = self.get_positions_of_living(True, piece.white)
@@ -151,130 +158,36 @@ class Game:
         for i in range(2):
             for piece in color_pieces[i]:
                 if piece.die is False:
-                    piece.drawing_image(self.screen)
+                    self.board.drawing_image(piece.image, piece.rect)
                 else:
-                    piece.drawing_die_image(self.screen)
-
-    @staticmethod
-    def create_msg(msg, size, color):
-        font = pygame.font.SysFont('Times New Roman', size, True, False)
-        text = font.render(msg, True, color)
-        return text
-
-    def draw_game_over(self):
-        if self.winner != 'Tied':
-            end_msg = self.create_msg('Game Over :: Winner is {}'.format(self.winner), 40, WHITE_COLOR)
-            pos = (230, 280)
-        else:
-            end_msg = self.create_msg('Game Over :: Tied Game'.format(self.winner), 40, WHITE_COLOR)
-            pos = (265, 280)
-
-        reset = self.create_msg('Press ENTER to restart', 25, WHITE_COLOR)
-
-        pygame.draw.rect(self.screen, (40, 40, 40), (190, 240, 600, 170))
-        pygame.draw.line(self.screen, WHITE_COLOR, (190, 240), (790, 240), 3)
-        pygame.draw.line(self.screen, WHITE_COLOR, (190, 240), (190, 410), 3)
-        pygame.draw.line(self.screen, WHITE_COLOR, (190, 410), (790, 410), 3)
-        pygame.draw.line(self.screen, WHITE_COLOR, (790, 240), (790, 410), 3)
-
-        self.screen.blit(end_msg, pos)
-        self.screen.blit(reset, (355, 335))
-
-    def draw_promotion(self):
-        msg = self.create_msg('Hear a promotion make your choice'.format(self.winner), 35, WHITE_COLOR)
-        choice = self.create_msg('B: Bishop      K: Knight      R: Rook      Q: Queen', 20, WHITE_COLOR)
-
-        pygame.draw.rect(self.screen, (40, 40, 40), (190, 240, 600, 170))
-        pygame.draw.line(self.screen, WHITE_COLOR, (190, 240), (790, 240), 3)
-        pygame.draw.line(self.screen, WHITE_COLOR, (190, 240), (190, 410), 3)
-        pygame.draw.line(self.screen, WHITE_COLOR, (190, 410), (790, 410), 3)
-        pygame.draw.line(self.screen, WHITE_COLOR, (790, 240), (790, 410), 3)
-
-        self.screen.blit(msg, (222, 280))
-        self.screen.blit(choice, (305, 335))
-
-    def draw_agreement(self):
-        if self.turn_white:
-            text = 'White king asks for a draw, do you accept?'
-        else:
-            text = 'Black king asks for a draw, do you accept?'
-
-        msg = self.create_msg(text, 30, WHITE_COLOR)
-        choice = self.create_msg('y: Yes      N: No', 38, WHITE_COLOR)
-
-        pygame.draw.rect(self.screen, (40, 40, 40), (190, 240, 600, 170))
-        pygame.draw.line(self.screen, WHITE_COLOR, (190, 240), (790, 240), 3)
-        pygame.draw.line(self.screen, WHITE_COLOR, (190, 240), (190, 410), 3)
-        pygame.draw.line(self.screen, WHITE_COLOR, (190, 410), (790, 410), 3)
-        pygame.draw.line(self.screen, WHITE_COLOR, (790, 240), (790, 410), 3)
-
-        self.screen.blit(msg, (220, 280))
-        self.screen.blit(choice, (360, 335))
-
-    def draw_turn_game(self):
-        msg = self.create_msg("Turn :: White pieces", 18, WHITE_COLOR if self.turn_white else (0, 0, 0))
-        pos_text = msg.get_rect(topleft=(30, 6))
-        self.screen.blit(msg, pos_text)
-
-        msg = self.create_msg("Turn :: Black pieces", 18, (0, 0, 0) if self.turn_white else WHITE_COLOR)
-        pos_text = msg.get_rect(bottomleft=(30, HEIGHT - 6))
-        self.screen.blit(msg, pos_text)
-
-    def draw_round(self):
-        msg = self.create_msg('Round :: {}'.format(self.round), 22, WHITE_COLOR)
-        pos_text = msg.get_rect(topright=(500, 5))
-        self.screen.blit(msg, pos_text)
-
-    def draw_moves_without_death(self):
-        msg = self.create_msg('Moves without death :: {}'.format(self.moves_without_death), 21, WHITE_COLOR)
-        pos_text = msg.get_rect(bottomleft=(350, 698))
-        self.screen.blit(msg, pos_text)
-
-    def draw_score(self):
-        scores = [self.white_score, self.black_score]
-        for idx, score in enumerate(scores):
-            msg = self.create_msg('Score :: {}'.format(score), 17, WHITE_COLOR)
-            if idx == 0:
-                pos_text = msg.get_rect(topright=(800, 7))
-            else:
-                pos_text = msg.get_rect(bottomleft=(735, 695))
-            self.screen.blit(msg, pos_text)
+                    self.board.drawing_dead_image(piece.dead_image, piece.dead_rect)
 
     def draw_check(self):
-        kings_pos = [self.get_piece(King, True, True)[0],
-                     self.get_piece(King, True, False)[0]]
-        enemies = [self.black_pieces, self.white_pieces]
+        if not self.over:
+            kings_pos = [self.get_piece(King, True, True)[0],
+                         self.get_piece(King, True, False)[0]]
+            enemies = [self.black_pieces, self.white_pieces]
 
-        for idx, king in enumerate(kings_pos):
-            enemies_list = enemies[idx]
-            for enemy in enemies_list:
-                if not enemy.die:
-                    current_partners, current_enemies = self.partners_and_enemies_positions(enemy)
-                    list_moves = enemy.moves_list(current_partners, current_enemies)
+            for idx, king in enumerate(kings_pos):
+                enemies_list = enemies[idx]
+                for enemy in enemies_list:
+                    if not enemy.die:
+                        current_partners, current_enemies = self.partners_and_enemies_positions(enemy)
+                        list_moves = enemy.moves_list(current_partners, current_enemies)
 
-                    if len(list_moves) > 0 and king in list_moves:
-                        pygame.draw.rect(self.screen, (204, 20, 20), (king[0] * EDGE + INITIAL_POSITION, king[1] * EDGE
-                                                                      + INITIAL_POSITION, EDGE, EDGE))
-                        pygame.draw.rect(self.screen, (20, 20, 20),
-                                         (king[0] * EDGE + INITIAL_POSITION, king[1] * EDGE
-                                          + INITIAL_POSITION, EDGE, EDGE), 2)
-                        break
+                        if len(list_moves) > 0 and king in list_moves:
+                            self.board.draw_square(king, (204, 20, 20), (20, 20, 20))
+                            break
 
     def draw_current_position(self, position):
-        pygame.draw.rect(self.screen, BLUE, (position[0] * EDGE + INITIAL_POSITION, position[1] * EDGE
-                                             + INITIAL_POSITION, EDGE, EDGE))
-        pygame.draw.rect(self.screen, (20, 20, 20), (position[0] * EDGE + INITIAL_POSITION, position[1] * EDGE
-                                                     + INITIAL_POSITION, EDGE, EDGE), 2)
+        self.board.draw_square(position, BLUE, (20, 20, 20))
 
     def draw_moves_list(self, piece):
         if piece is not None:
             partners, enemies = self.partners_and_enemies_positions(piece)
             self.draw_current_position(piece.position.get_position())
             for new_pos in piece.moves_list(partners, enemies):
-                pygame.draw.rect(self.screen, GREEN, (new_pos[0] * EDGE + INITIAL_POSITION, new_pos[1] * EDGE
-                                                      + INITIAL_POSITION, EDGE, EDGE))
-                pygame.draw.rect(self.screen, (20, 20, 20), (new_pos[0] * EDGE + INITIAL_POSITION, new_pos[1] * EDGE
-                                                             + INITIAL_POSITION, EDGE, EDGE), 2)
+                self.board.draw_square(new_pos, GREEN, (20, 20, 20))
 
     def battle(self, piece):
         enemies = self.black_pieces if piece.white else self.white_pieces
