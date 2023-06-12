@@ -9,12 +9,12 @@ class Rook(Piece):
         Piece.__init__(self, white, WHITE_ROOK if white else BLACK_ROOK,
                        DIE_WHITE_ROOK if white else DIE_BLACK_ROOK, axis, "Rook")
 
-        self.houses = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+        self._houses = [(0, 1), (0, -1), (1, 0), (-1, 0)]
 
     def moves_list(self, partners_pieces_location, enemies_pieces_locations):
         moves = []
 
-        for house in self.houses:
+        for house in self._houses:
             multiplier = 1
             path = True
 

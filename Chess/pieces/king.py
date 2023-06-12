@@ -8,13 +8,13 @@ class King(Piece):
     def __init__(self, white, axis):
         Piece.__init__(self, white, WHITE_KING if white else BLACK_KING,
                        DIE_WHITE_KING if white else DIE_BLACK_KING, axis, "King")
-        self.houses = [(1, 0), (1, 1), (1, -1), (-1, 0), (-1, 1), (-1, -1), (0, 1), (0, -1)]
+        self._houses = [(1, 0), (1, 1), (1, -1), (-1, 0), (-1, 1), (-1, -1), (0, 1), (0, -1)]
         self.check = False
         self.count_check = 1
 
     def moves_list(self, partners_pieces_location, enemies_pieces_locations):
         moves = []
-        for house in self.houses:
+        for house in self._houses:
 
             new_pos = (self.position.axis_x + house[0],
                        self.position.axis_y + house[1])

@@ -22,16 +22,8 @@ def main():
 
     while True:
         clock.tick(60)
-
-        game.screen.fill(const.BOARD_COLOR)
-        game.board.draw_board()
-        game.board.draw_turn_game(game.turn_white)
-        game.board.draw_round(game.round)
-        game.board.draw_score(game.white_score, game.black_score)
-        game.board.draw_moves_without_death(game.moves_without_death)
-        game.draw_moves_list(current_piece)
-        game.draw_check()
-        game.drawing_pieces()
+        game.board.draw_board(game.turn_white, game.moves_without_death)
+        game.draw_pieces_and_effects(current_piece)
 
         for event in pygame.event.get():
 
@@ -42,7 +34,7 @@ def main():
 
             '''Selection the piece'''
             if event.type == pygame.MOUSEBUTTONDOWN and not game.over and not game.pause:
-                pieces = game.white_pieces if game.turn_white else game.black_pieces
+                pieces = game.get_pieces_color(game.turn_white)
                 for piece in pieces:
                     if piece is not None and piece.rect.collidepoint(event.pos):
                         piece.moving = True

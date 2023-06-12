@@ -8,14 +8,14 @@ class Queen(Piece):
     def __init__(self, white, axis):
         Piece.__init__(self, white, WHITE_QUEEN if white else BLACK_QUEEN,
                        DIE_WHITE_QUEEN if white else DIE_BLACK_QUEEN, axis, "Queen")
-        self.diagonal_houses = [(1, -1), (-1, -1), (1, 1), (-1, 1)]
-        self.horizontal_houses = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+        self._diagonal_houses = [(1, -1), (-1, -1), (1, 1), (-1, 1)]
+        self._horizontal_houses = [(0, 1), (0, -1), (1, 0), (-1, 0)]
 
     def moves_list(self, partners_pieces_location, enemies_pieces_locations):
         moves = []
 
         '''Bishop movies'''
-        for house in self.diagonal_houses:
+        for house in self._diagonal_houses:
             multiplier = 1
             path = True
 
@@ -31,7 +31,7 @@ class Queen(Piece):
                     path = False
 
         '''Rook movies'''
-        for house in self.horizontal_houses:
+        for house in self._horizontal_houses:
             multiplier = 1
             path = True
 
