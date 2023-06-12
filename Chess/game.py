@@ -1,4 +1,3 @@
-import pygame.font
 from auxi.const import *
 from pieces.bishop import Bishop
 from pieces.king import King
@@ -12,7 +11,9 @@ from board.board import Board
 class Game:
 
     def __init__(self, screen):
-        self.game_over = False
+        self.over = False
+        self.pause = False
+        self.agreement = False
         self.turn_white = True
         self.white_pieces = []
         self.black_pieces = []
@@ -20,9 +21,7 @@ class Game:
         self.round = 1
         self.white_score = 0
         self.black_score = 0
-
-        self.white_pieces_locations = [None] * 16
-        self.black_pieces_locations = [None] * 16
+        self.moves_without_death = 0
 
         self.screen = screen
         self.board = Board(screen)
@@ -30,19 +29,18 @@ class Game:
         self.__create_pieces()
 
     def reset(self, winner_or_tied):
-        self.game_over = False
+        self.over = False
         self.turn_white = True
         self.white_pieces = []
         self.black_pieces = []
         self.winner = None
+        self.moves_without_death = 0
         self.round += 1
+
         if winner_or_tied == 'White':
             self.white_score += 1
         elif winner_or_tied == 'Black':
             self.black_score += 1
-
-        self.white_pieces_locations = [None] * 16
-        self.black_pieces_locations = [None] * 16
 
         self.screen = self.screen
         self.board = Board(self.screen)
@@ -51,13 +49,6 @@ class Game:
 
     def change_turn(self):
         self.turn_white = False if self.turn_white is True else True
-
-    def __load_positions(self):
-        for idx, piece in enumerate(self.white_pieces):
-            self.white_pieces_locations[idx] = piece.position.get_position()
-
-        for idx, piece in enumerate(self.black_pieces):
-            self.black_pieces_locations[idx] = piece.position.get_position()
 
     def __create_pieces(self):
         self.white_pieces.append(Rook(True, WHITE_LOCATIONS[0]))
@@ -82,205 +73,199 @@ class Game:
         for i in range(8, 16):
             self.black_pieces.append(Pawn(False, BLACK_LOCATIONS[i]))
 
-        self.__load_positions()
-
-    def save_piece_location(self, piece, idx):
-        if piece.white:
-            self.white_pieces_locations[idx] = piece.position.get_position()
-        else:
-            self.black_pieces_locations[idx] = piece.position.get_position()
-
-    def drawing_pieces(self):
-        color_pieces = [self.black_pieces, self.white_pieces] if self.turn_white else [self.white_pieces,
-                                                                                       self.black_pieces]
-        for i in range(2):
-            for piece in color_pieces[i]:
-                if piece.die is False:
-                    piece.drawing_image(self.screen)
-                else:
-                    piece.drawing_die_image(self.screen)
-
-    def draw_game_over(self):
-        if self.winner != 'Tied':
-            end_msg = self.create_msg('Game Over :: Winner is {}'.format(self.winner), 40, WHITE_COLOR)
-        else:
-            end_msg = self.create_msg('Game Over :: Tied Game'.format(self.winner), 40, WHITE_COLOR)
-
-        reset = self.create_msg('Press ENTER to restart', 25, WHITE_COLOR)
-
-        pygame.draw.rect(self.screen, (40, 40, 40), (190, 240, 600, 170))
-        pygame.draw.line(self.screen, WHITE_COLOR, (190, 240), (790, 240), 3)
-        pygame.draw.line(self.screen, WHITE_COLOR, (190, 240), (190, 410), 3)
-        pygame.draw.line(self.screen, WHITE_COLOR, (190, 410), (790, 410), 3)
-        pygame.draw.line(self.screen, WHITE_COLOR, (790, 240), (790, 410), 3)
-
-        self.screen.blit(end_msg, (230, 280))
-        self.screen.blit(reset, (355, 335))
-
-    @staticmethod
-    def create_msg(msg, size, color):
-        font = pygame.font.SysFont('Times New Roman', size, True, False)
-        text = font.render(msg, True, color)
-        return text
-
-    def paint_turn_game(self):
-        msg = self.create_msg("Turn :: White pieces", 18, WHITE_COLOR if self.turn_white else (0, 0, 0))
-        pos_text = msg.get_rect(topleft=(30, 6))
-        self.screen.blit(msg, pos_text)
-
-        msg = self.create_msg("Turn :: Black pieces", 18, (0, 0, 0) if self.turn_white else WHITE_COLOR)
-        pos_text = msg.get_rect(bottomleft=(30, HEIGHT - 6))
-        self.screen.blit(msg, pos_text)
-
-    def paint_round(self):
-        msg = self.create_msg('Round :: {}'.format(self.round), 18, WHITE_COLOR)
-        pos_text = msg.get_rect(topright=(500, 5))
-        self.screen.blit(msg, pos_text)
-
-    def paint_score(self):
-        scores = [self.white_score, self.black_score]
-        position = [(800, 5), (800, 990)]
-        for idx, score in enumerate(scores):
-            msg = self.create_msg('Score :: {}'.format(score), 15, WHITE_COLOR)
-            if idx == 0:
-                pos_text = msg.get_rect(topright=(800, 5))
-            else:
-                pos_text = msg.get_rect(bottomleft=(735, 695))
-            self.screen.blit(msg, pos_text)
-
-    def paint_current_position(self, position):
-        pygame.draw.rect(self.screen, BLUE, (position[0] * EDGE + INITIAL_POSITION, position[1] * EDGE
-                                             + INITIAL_POSITION, EDGE, EDGE))
-        pygame.draw.rect(self.screen, (20, 20, 20), (position[0] * EDGE + INITIAL_POSITION, position[1] * EDGE
-                                                     + INITIAL_POSITION, EDGE, EDGE), 2)
-
-    def paint_moves_list(self, white, current_id):
-        if current_id is not None:
-            if white:
-                piece = self.white_pieces[current_id]
-                self.paint_current_position(piece.position.get_position())
-                for new_pos in piece.moves_list(self.white_pieces_locations, self.black_pieces_locations):
-                    pygame.draw.rect(self.screen, BLACK_GREEN, (new_pos[0] * EDGE + INITIAL_POSITION, new_pos[1] * EDGE
-                                                                + INITIAL_POSITION, EDGE, EDGE))
-                    pygame.draw.rect(self.screen, (20, 20, 20), (new_pos[0] * EDGE + INITIAL_POSITION, new_pos[1] * EDGE
-                                                                 + INITIAL_POSITION, EDGE, EDGE), 2)
-            else:
-                piece = self.black_pieces[current_id]
-                self.paint_current_position(piece.position.get_position())
-                for new_pos in piece.moves_list(self.black_pieces_locations, self.white_pieces_locations):
-                    pygame.draw.rect(self.screen, BLACK_GREEN, (new_pos[0] * EDGE + INITIAL_POSITION, new_pos[1] * EDGE
-                                                                + INITIAL_POSITION, EDGE, EDGE))
-                    pygame.draw.rect(self.screen, (20, 20, 20), (new_pos[0] * EDGE + INITIAL_POSITION, new_pos[1] * EDGE
-                                                                 + INITIAL_POSITION, EDGE, EDGE), 2)
-
     def set_winner(self, winner_or_tied):
         self.winner = winner_or_tied
 
+    def get_piece(self, class_piece, position, white):
+        vector = []
+        pieces = self.white_pieces if white else self.black_pieces
+
+        if position:
+            for piece in pieces:
+                if isinstance(piece, class_piece):
+                    vector.append(piece.position.get_position())
+        else:
+            for piece in pieces:
+                if isinstance(piece, class_piece):
+                    vector.append(piece)
+
+        return vector
+
+    def get_positions_of_living(self, king, white):
+        vector = []
+        pieces = self.white_pieces if white else self.black_pieces
+
+        if king:
+            for piece in pieces:
+                if not piece.die:
+                    vector.append(piece.position.get_position())
+        else:
+            for piece in pieces:
+                if not isinstance(piece, King) and not piece.die:
+                    vector.append(piece.position.get_position())
+
+        return vector
+
+    def get_status_pieces(self, king, white):
+        vector = []
+        pieces = self.white_pieces if white else self.black_pieces
+        if king:
+            for piece in pieces:
+                vector.append(piece.die)
+        else:
+            for piece in pieces:
+                if not isinstance(piece, King):
+                    vector.append(piece.die)
+
+        return vector
+
+    def check_promotion(self):
+        pieces = self.get_piece(Pawn, False, not self.turn_white)
+
+        for piece in pieces:
+            if not piece.die:
+                if piece.position.axis_y == 0 or piece.position.axis_y == 7:
+                    return True
+
+    def promotion(self, new_class):
+        pieces = self.black_pieces if self.turn_white else self.white_pieces
+
+        for idx, piece in enumerate(pieces):
+            if not piece.die and isinstance(piece, Pawn):
+                if piece.position.axis_y == 0 or piece.position.axis_y == 7:
+                    aux_rect = pieces[idx].dead_rect
+                    aux_rect_x = pieces[idx].dead_rect.x
+                    aux_rect_y = pieces[idx].dead_rect.y
+
+                    pieces[idx] = new_class(not self.turn_white, piece.position.get_position())
+
+                    pieces[idx].dead_rect = aux_rect
+                    pieces[idx].dead_rect.x = aux_rect_x
+                    pieces[idx].dead_rect.y = aux_rect_y
+
+    def partners_and_enemies_positions(self, piece):
+        partners = self.get_positions_of_living(True, piece.white)
+        if isinstance(piece, King):
+            enemies = self.get_piece(King, True, not piece.white)
+        else:
+            enemies = self.get_positions_of_living(True, not piece.white)
+
+        return partners, enemies
+
+    def check_king(self, king):
+        if not king.die:
+            king_pos = self.get_piece(King, True, king.white)[0]
+            enemies = self.black_pieces if king.white else self.white_pieces
+
+            for enemy in enemies:
+                if not enemy.die:
+                    current_partners, current_enemies = self.partners_and_enemies_positions(enemy)
+                    list_moves = enemy.moves_list(current_partners, current_enemies)
+
+                    if len(list_moves) > 0 and king_pos in list_moves:
+                        return True
+        return False
+
+    def drawing_pieces(self):
+        if self.turn_white:
+            color_pieces = [self.black_pieces, self.white_pieces]
+        else:
+            color_pieces = [self.white_pieces, self.black_pieces]
+
+        for i in range(2):
+            for piece in color_pieces[i]:
+                if piece.die is False:
+                    self.board.drawing_image(piece.image, piece.rect)
+                else:
+                    self.board.drawing_dead_image(piece.dead_image, piece.dead_rect)
+
+    def draw_check(self):
+        if not self.over:
+            kings = [self.get_piece(King, False, True)[0], self.get_piece(King, False, False)[0]]
+            for king in kings:
+                if self.check_king(king):
+                    self.board.draw_square(king.position.get_position(), RED, BLACK)
+
+    def draw_moves_list(self, piece):
+        if piece is not None:
+            partners, enemies = self.partners_and_enemies_positions(piece)
+            self.board.draw_square(piece.position.get_position(), BLUE, BLACK)
+            for new_pos in piece.moves_list(partners, enemies):
+                self.board.draw_square(new_pos, GREEN, BLACK)
+
     def battle(self, piece):
-        if piece.white:
-            for idx, enemy in enumerate(self.black_pieces):
+        enemies = self.black_pieces if piece.white else self.white_pieces
+        for enemy in enemies:
+            if not enemy.die:
                 if piece.position.get_position() == enemy.position.get_position():
                     enemy.die_piece()
-                    self.black_pieces_locations[idx] = None
-
-        else:
-            for idx, enemy in enumerate(self.white_pieces):
-                if piece.position.get_position() == enemy.position.get_position():
-                    enemy.die_piece()
-                    self.white_pieces_locations[idx] = None
-
-    def _king_die(self):
-        white_king = self.white_pieces[KING_IDX]
-        black_king = self.black_pieces[KING_IDX]
-
-        if white_king.die is True or black_king.die is True:
-            return True
-        else:
-            return False
+                    return True
+        return False
 
     def _only_kings(self):
-        dead_white_pieces = list([piece.die for piece in self.white_pieces])
-        dead_white_pieces.pop(KING_IDX)
+        dead_white_pieces = self.get_status_pieces(False, True)
+        dead_black_pieces = self.get_status_pieces(False, False)
 
-        dead_black_pieces = list([piece.die for piece in self.black_pieces])
-        dead_black_pieces.pop(KING_IDX)
-
-        if all(dead_white_pieces) is True and all(dead_black_pieces) is True:
+        if all(dead_white_pieces) and all(dead_black_pieces):
             return True
 
-    def _get_dead_pieces(self, white):
-        if white:
-            return list([piece.die for piece in self.white_pieces])
-        else:
-            return list([piece.die for piece in self.black_pieces])
+    def _only_kings_and(self, class_target, white):
+        target = self.get_piece(class_target, False, white)
+        alive_target = 0
+        for current in target:
+            if not current.die:
+                alive_target += 1
 
-    def _get_target_alive(self, white, class_):
-        idx = None
+        if alive_target != 1:
+            return False
 
-        if white:
-            pieces = self.white_pieces
-        else:
-            pieces = self.black_pieces
+        partners = self.white_pieces if white else self.black_pieces
+        partners_status = []
+        for ally in partners:
+            if not isinstance(ally, class_target) and not isinstance(ally, King):
+                partners_status.append(ally.die)
 
-        if isinstance(class_, Knight):
-            idx = KNIGHT_IDX
-        elif isinstance(class_, Bishop):
-            idx = BISHOP_IDX
+        enemies_status = self.get_status_pieces(False, not white)
 
-        if idx is not None:
-            dead_target_pieces = [pieces[idx[0]].die, pieces[idx[1]].die]
-            amount = 0
-
-            for piece in dead_target_pieces:
-                if piece is False:
-                    amount += 1
-
-            return amount
-
-    def _only_kings_and_knight(self):
-
-        amount_white_knight = self._get_target_alive(True, Knight)
-        amount_black_knight = self._get_target_alive(False, Knight)
-
-        dead_white_pieces = self._get_dead_pieces(True)
-        dead_white_pieces.pop(KING_IDX)
-        dead_white_pieces.pop(KNIGHT_IDX[0])
-        dead_white_pieces.pop(KNIGHT_IDX[1])
-
-        dead_black_pieces = self._get_dead_pieces(False)
-        dead_black_pieces.pop(KING_IDX)
-        dead_black_pieces.pop(KNIGHT_IDX[0])
-        dead_black_pieces.pop(KNIGHT_IDX[1])
-
-        if amount_white_knight == 1 and amount_black_knight == 0 and all(dead_black_pieces):
-            return True
-
-        if amount_white_knight == 0 and amount_black_knight == 1 and all(dead_white_pieces):
+        if alive_target == 1 and all(enemies_status) and all(partners_status):
             return True
 
         return False
 
-    def _only_king_and_bishop(self):
-        pass
-
     def a_tie(self):
-
+        status = False
         if self._only_kings():
-            return True
+            status = True
 
-        if self._only_kings_and_knight():
-            return True
+        if self._only_kings_and(Knight, True) or self._only_kings_and(Knight, False):
+            status = True
 
-        if self._only_king_and_bishop():
-            return True
+        if self._only_kings_and(Bishop, True) or self._only_kings_and(Bishop, False):
+            status = True
 
+        if self.moves_without_death >= 50:
+            status = True
+
+        return status
+
+    def some_king_died(self):
+        white_king = self.get_piece(King, False, True)[0]
+        black_king = self.get_piece(King, False, False)[0]
+
+        if white_king.die or black_king.die:
+            return True
         else:
             return False
 
-    def check_mate(self):
+    def check_mate(self, white):
+        if not self.over:
+            king = self.get_piece(King, False, white)[0]
 
-        if self._king_die():
-            return True
+            if self.check_king(king):
+                king.check = True
+                king.count_check += 1
+            else:
+                king.check = False
+                king.count_check = 0
 
-        else:
-            return False
+            return True if king.count_check >= 2 else False
