@@ -28,10 +28,10 @@ class Board:
         text = font.render(msg, True, color)
         return text
 
-    def drawing_image(self, image, rect):
+    def draw_image(self, image, rect):
         self.screen.blit(image, rect)
 
-    def drawing_dead_image(self, dead_image, dead_rect):
+    def draw_dead_image(self, dead_image, dead_rect):
         self.screen.blit(dead_image, dead_rect)
 
     def draw_square(self, position, color_square, color_line):

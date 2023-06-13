@@ -46,6 +46,6 @@ class Queen(Piece):
                 else:
                     path = False
 
-        self.valid_movies = moves
+        self.valid_moves = moves
 
-        return self.valid_movies
+        return self.valid_moves

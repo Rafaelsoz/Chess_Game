@@ -126,15 +126,9 @@ class Game:
         for idx, piece in enumerate(pieces):
             if not piece.die and isinstance(piece, Pawn):
                 if piece.position.axis_y == 0 or piece.position.axis_y == 7:
-                    aux_rect = pieces[idx].dead_rect
-                    aux_rect_x = pieces[idx].dead_rect.x
-                    aux_rect_y = pieces[idx].dead_rect.y
-
+                    aux = pieces[idx].dead_piece_position
                     pieces[idx] = new_class(not self.turn_white, piece.position.get_position())
-
-                    pieces[idx].dead_rect = aux_rect
-                    pieces[idx].dead_rect.x = aux_rect_x
-                    pieces[idx].dead_rect.y = aux_rect_y
+                    pieces[idx].dead_piece_position = aux
 
     def partners_and_enemies_positions(self, piece):
         partners = self.get_positions_of_living(True, piece.white)
@@ -167,10 +161,10 @@ class Game:
 
         for i in range(2):
             for piece in color_pieces[i]:
-                if piece.die is False:
-                    self.board.drawing_image(piece.image, piece.rect)
+                if not piece.die:
+                    self.board.draw_image(piece.image, piece.rect)
                 else:
-                    self.board.drawing_dead_image(piece.dead_image, piece.dead_rect)
+                    self.board.draw_dead_image(piece.dead_image, piece.dead_piece_position.get_position())
 
     def _draw_check(self):
         if not self.over:
@@ -183,8 +177,14 @@ class Game:
         if piece is not None:
             partners, enemies = self.partners_and_enemies_positions(piece)
             self.board.draw_square(piece.position.get_position(), BLUE, BLACK)
+
             for new_pos in piece.moves_list(partners, enemies):
-                self.board.draw_square(new_pos, GREEN, BLACK)
+                if isinstance(piece, King):
+                    enemies = self.get_positions_of_living(False, not piece.white)
+                if new_pos in enemies:
+                    self.board.draw_square(new_pos, YELLOW, BLACK)
+                else:
+                    self.board.draw_square(new_pos, GREEN, BLACK)
 
     def draw_pieces_and_effects(self, current_piece):
         self._draw_moves_list(current_piece)
@@ -206,6 +206,7 @@ class Game:
 
         if all(dead_white_pieces) and all(dead_black_pieces):
             return True
+        return False
 
     def _only_kings_and(self, class_target, white):
         target = self.get_pieces(class_target, False, white)
