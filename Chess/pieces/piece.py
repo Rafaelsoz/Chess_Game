@@ -9,7 +9,7 @@ class Piece:
         self.image = image
         self.die = False
         self.dead_image = die_image
-        self.valid_movies = None
+        self.valid_moves = None
         self.white = white
 
         self.current_position = Position(axis[0], axis[1])

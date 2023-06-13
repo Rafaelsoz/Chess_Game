@@ -10,7 +10,7 @@ class King(Piece):
                        DIE_WHITE_KING if white else DIE_BLACK_KING, axis, "King")
         self._houses = [(1, 0), (1, 1), (1, -1), (-1, 0), (-1, 1), (-1, -1), (0, 1), (0, -1)]
         self.check = False
-        self.count_check = 1
+        self.count_check = 0
 
     def moves_list(self, partners_pieces_location, enemies_pieces_locations):
         moves = []
@@ -23,6 +23,6 @@ class King(Piece):
                 if position_in_board(new_pos):
                     moves.append(new_pos)
 
-        self.valid_movies = moves
+        self.valid_moves = moves
 
-        return self.valid_movies
+        return self.valid_moves

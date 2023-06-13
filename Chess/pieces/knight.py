@@ -21,6 +21,6 @@ class Knight(Piece):
             if new_pos not in partners_pieces_location and position_in_board(new_pos):
                 moves.append(new_pos)
 
-        self.valid_movies = moves
+        self.valid_moves = moves
 
-        return self.valid_movies
+        return self.valid_moves

@@ -168,9 +168,9 @@ class Game:
         for i in range(2):
             for piece in color_pieces[i]:
                 if piece.die is False:
-                    self.board.drawing_image(piece.image, piece.rect)
+                    self.board.draw_image(piece.image, piece.rect)
                 else:
-                    self.board.drawing_dead_image(piece.dead_image, piece.dead_rect)
+                    self.board.draw_dead_image(piece.dead_image, piece.dead_rect)
 
     def _draw_check(self):
         if not self.over:
@@ -206,6 +206,7 @@ class Game:
 
         if all(dead_white_pieces) and all(dead_black_pieces):
             return True
+        return False
 
     def _only_kings_and(self, class_target, white):
         target = self.get_pieces(class_target, False, white)
