@@ -167,10 +167,10 @@ class Game:
 
         for i in range(2):
             for piece in color_pieces[i]:
-                if piece.die is False:
+                if not piece.die:
                     self.board.draw_image(piece.image, piece.rect)
                 else:
-                    self.board.draw_dead_image(piece.dead_image, piece.dead_rect)
+                    self.board.draw_dead_image(piece.dead_image, piece.dead_piece_position.get_position())
 
     def _draw_check(self):
         if not self.over:
@@ -183,8 +183,14 @@ class Game:
         if piece is not None:
             partners, enemies = self.partners_and_enemies_positions(piece)
             self.board.draw_square(piece.position.get_position(), BLUE, BLACK)
+
             for new_pos in piece.moves_list(partners, enemies):
-                self.board.draw_square(new_pos, GREEN, BLACK)
+                if isinstance(piece, King):
+                    enemies = self.get_positions_of_living(False, not piece.white)
+                if new_pos in enemies:
+                    self.board.draw_square(new_pos, YELLOW, BLACK)
+                else:
+                    self.board.draw_square(new_pos, GREEN, BLACK)
 
     def draw_pieces_and_effects(self, current_piece):
         self._draw_moves_list(current_piece)
