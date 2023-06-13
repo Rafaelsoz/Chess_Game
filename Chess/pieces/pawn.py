@@ -18,7 +18,9 @@ class Pawn(Piece):
             for i in range(2):
                 new_pos = (self.position.axis_x, self.position.axis_y + houses[i])
                 if new_pos not in partners_pieces_location:
-                    if new_pos not in enemies_pieces_locations and position_in_board(new_pos):
+                    if new_pos in enemies_pieces_locations:
+                        break
+                    elif position_in_board(new_pos):
                         moves.append(new_pos)
         else:
             houses = 1 if self.white else -1

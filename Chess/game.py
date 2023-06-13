@@ -126,15 +126,9 @@ class Game:
         for idx, piece in enumerate(pieces):
             if not piece.die and isinstance(piece, Pawn):
                 if piece.position.axis_y == 0 or piece.position.axis_y == 7:
-                    aux_rect = pieces[idx].dead_rect
-                    aux_rect_x = pieces[idx].dead_rect.x
-                    aux_rect_y = pieces[idx].dead_rect.y
-
+                    aux = pieces[idx].dead_piece_position
                     pieces[idx] = new_class(not self.turn_white, piece.position.get_position())
-
-                    pieces[idx].dead_rect = aux_rect
-                    pieces[idx].dead_rect.x = aux_rect_x
-                    pieces[idx].dead_rect.y = aux_rect_y
+                    pieces[idx].dead_piece_position = aux
 
     def partners_and_enemies_positions(self, piece):
         partners = self.get_positions_of_living(True, piece.white)
